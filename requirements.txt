@@ -6,3 +6,4 @@ python-dotenv
 SQLAlchemy>=2.0
 psycopg[binary]
 alembic
+PyJWT
