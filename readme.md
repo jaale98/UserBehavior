@@ -1,1 +1,1 @@
-yes
+Simple web app that tracks user actions in a postgres database.
