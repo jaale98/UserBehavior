@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_debug: bool = True
     app_secret_key: str = "change-me-in-prod"
-    cors_origins: List[AnyHttpUrl] = []
+    cors_origins: List[str] = []
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/userbehavior"
 
     jwt_algorithm: str = "HS256"

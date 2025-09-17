@@ -6,9 +6,16 @@ from api import elements, events
 
 app = FastAPI(title="UserBehavior API", version="0.1.0")
 
+if settings.app_env == "development":
+    allow_origins = ["*"]
+else:
+    allow_origins = [str(o) for o in settings.cors_origins]
+    if not allow_origins:
+        raise RuntimeError("CORS_ORIGINS must be set in production")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(o) for o in settings.cors_origins] or ["*"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

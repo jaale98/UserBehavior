@@ -1,8 +1,116 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head><meta charset="utf-8"><title>UserBehavior</title></head>
-  <body>
-    <h1>UserBehavior</h1>
-    <p>Frontend placeholder — we’ll add login and elements in later steps.</p>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>UserBehavior</title>
+</head>
+<body>
+  <h1>UserBehavior</h1>
+
+  <section id="login-section">
+    <h2>Login</h2>
+    <input id="username" placeholder="Username" />
+    <input id="password" type="password" placeholder="Password" />
+    <button id="login-btn">Login</button>
+    <div id="login-status"></div>
+  </section>
+
+  <section id="ui-section" style="display:none;">
+    <h2>Playground</h2>
+    <div id="elements" style="display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:12px;"></div>
+    <div id="event-status"></div>
+  </section>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    let token = null;
+
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!res.ok) {
+        document.getElementById("login-status").innerText = "Login failed";
+        return;
+      }
+
+      const data = await res.json();
+      token = data.access_token;
+
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("ui-section").style.display = "block";
+
+      await loadElements();
+    }
+
+    async function loadElements() {
+      const res = await fetch(`${API_BASE}/elements`, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if (!res.ok) {
+        document.getElementById("event-status").innerText = "Failed to load elements";
+        return;
+      }
+
+      const elements = await res.json();
+      const container = document.getElementById("elements");
+      container.innerHTML = "";
+
+      elements.forEach(el => {
+        if (el.type === "button") {
+          const btn = document.createElement("button");
+          btn.textContent = el.label;
+          btn.onclick = () => sendEvent(el.key, "click");
+          container.appendChild(btn);
+        } else if (el.type === "text_input") {
+          const wrap = document.createElement("div");
+          const input = document.createElement("input");
+          input.placeholder = el.label;
+          input.onkeypress = (e) => {
+            if (e.key === "Enter" && input.value.trim().length) {
+              sendEvent(el.key, "text_submit", input.value.trim());
+              input.value = "";
+            }
+          };
+          wrap.appendChild(input);
+          container.appendChild(wrap);
+        }
+      });
+    }
+
+    async function sendEvent(element_key, event_type, payload = null) {
+      const body = { element_key, event_type };
+      if (payload !== null) body.payload = payload;
+
+      const res = await fetch(`${API_BASE}/events`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(body)
+      });
+
+      const status = document.getElementById("event-status");
+      if (res.ok) {
+        status.textContent = "Saved";
+        setTimeout(() => (status.textContent = ""), 800);
+      } else {
+        const txt = await res.text();
+        console.error("Event failed:", txt);
+        status.textContent = "Error saving event";
+      }
+    }
+
+    document.getElementById("login-btn").addEventListener("click", login);
+
+  </script>
+</body>
 </html>
