@@ -45,6 +45,7 @@ class Event(Base):
     ui_element_id: Mapped[int] = mapped_column(ForeignKey("ui_elements.id", ondelete="RESTRICT"), nullable=False, index=True)
     payload: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    session_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="events")
     ui_element: Mapped["UIElement"] = relationship(back_populates="events")

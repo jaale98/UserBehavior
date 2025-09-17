@@ -1,4 +1,4 @@
-from pydantic import BaseModel, AnyHttpUrl, field_validator
+from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings
 from typing import List
 import os
@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/userbehavior"
 
     jwt_algorithm: str = "HS256"
-    access_token_expires_minutes = int = 60
+    access_token_expires_minutes: int = 60
 
     @field_validator("cors_origins", mode="before")
     @classmethod
